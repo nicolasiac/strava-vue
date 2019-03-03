@@ -1,41 +1,54 @@
 <template>
   <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+    <button v-on:click="stravaLogin()">Login to strava</button>
   </div>
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
-  name: 'HelloWorld',
+  name: "HelloWorld",
   props: {
-    msg: String,
+    msg: String
   },
+  methods: {
+    stravaLogin() {
+      location.replace(
+        "https://www.strava.com/oauth/authorize?client_id=33030" +
+          "&redirect_uri=http://localhost:8080" +
+          "&response_type=code"
+      );
+    }
+  },
+  mounted() {
+    var url = new URL(window.location.href);
+    var c = url.searchParams.get("code");
+    console.log(c);
+
+    if (c.length > 0) {
+      var authurl =
+        "https://www.strava.com/oauth/token?client_id=33030" +
+        "&client_secret=6822dcd1afced7c8e147fc26ac87299e75962ca0" +
+        "&code=" +
+        c +
+        "&grant_type=authorization_code";
+
+      axios.post(authurl, {}).then(res => {
+        var token = res.data.access_token;
+        console.log(res);
+
+        var getUrl =
+          "https://www.strava.com/api/v3/athlete/activities?access_token=" +
+          token;
+        //       "https://www.strava.com/api/v3/athlete?access_token=" + token;
+
+        axios.get(getUrl).then(res => {
+          console.log(res);
+        });
+      });
+    }
+  }
 };
 </script>
 
